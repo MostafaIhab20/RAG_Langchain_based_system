@@ -3,8 +3,8 @@
 Module: Hybrid Retrieval Engine (local/retriever.py)
 Project: Production RAG System with LangChain & Google Gemini
 Author: Mostafa Ihab
-Date: 2026-09-12
-Version: 1.0.0
+Date: March 2026
+Version: 1.1.0
 Description:
     Combines dense semantic vector search (Chroma) with sparse exact-keyword
     search (BM25) using Reciprocal Rank Fusion (EnsembleRetriever).
@@ -12,18 +12,12 @@ Description:
 """
 
 __author__ = "Mostafa Ihab"
-__version__ = "1.0.0"
-__date__ = "2026-09-12"
+__version__ = "1.1.0"
+__date__ = "March 2026"
 
 from langchain_community.retrievers import BM25Retriever
 
-try:
-    from langchain_classic.retrievers import EnsembleRetriever
-except ImportError:
-    try:
-        from langchain.retrievers import EnsembleRetriever
-    except ImportError:
-        from langchain_community.retrievers import EnsembleRetriever
+from langchain_classic.retrievers import EnsembleRetriever
 
 class HybridRetrieverManager:
     """
@@ -38,7 +32,7 @@ class HybridRetrieverManager:
         bm25_weight: float = 0.4,
         vector_weight: float = 0.6
     ):
-        print("⚙️ Initializing Hybrid Retrieval Engine (BM25 + Semantic)...")
+        print("Initializing Hybrid Retrieval Engine (BM25 + Semantic)...")
 
         # 1. BM25 Sparse Keyword Index
         print(f"   -> Indexing {len(documents)} document chunk(s) into BM25...")
@@ -55,7 +49,7 @@ class HybridRetrieverManager:
             retrievers=[self.bm25_retriever, self.vector_retriever],
             weights=[bm25_weight, vector_weight]
         )
-        print("✅ Hybrid Search is ready.")
+        print("Hybrid Search is ready.")
 
     def get_retriever(self):
         """Returns the fused retriever interface."""

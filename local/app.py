@@ -1,20 +1,20 @@
 """
 =============================================================================
 Module: Streamlit Web UI Application (local/app.py)
-Project: Production RAG System with LangChain & Google Gemini
+Project: SASA - Silicon & Architecture Search Assistant
 Author: Mostafa Ihab
-Date: 2026-09-12
-Version: 1.0.0
+Date: March 2026
+Version: 1.1.0
 Description:
-    Modern, interactive web-based UI for the LangChain RAG pipeline.
+    Modern, interactive web-based UI for SASA (LangChain RAG pipeline).
     Features conversational chat, document upload & management, live
     hyperparameter tuning, and expandable source citations.
 =============================================================================
 """
 
 __author__ = "Mostafa Ihab"
-__version__ = "1.0.0"
-__date__ = "2026-09-12"
+__version__ = "1.1.0"
+__date__ = "March 2026"
 
 import os
 import sys
@@ -49,7 +49,7 @@ def check_dependencies():
 
 missing_deps = check_dependencies()
 if missing_deps:
-    st.error(f"❌ Missing required dependencies: {', '.join(missing_deps)}")
+    st.error(f"Missing required dependencies: {', '.join(missing_deps)}")
     st.info("Please install them in your terminal: `pip install -r requirements.txt`")
     st.stop()
 
@@ -59,8 +59,7 @@ from local.main import load_existing_retriever, build_knowledge_base
 
 # Page Setup
 st.set_page_config(
-    page_title="RAG Assistant | Gemini & LangChain",
-    page_icon="⚡",
+    page_title="SASA | Post-Quantum Cryptography & Architecture RAG",
     layout="wide",
     initial_sidebar_state="expanded"
 )
@@ -140,21 +139,21 @@ existing_docs = get_existing_files(DATA_DIR)
 
 # Sidebar
 with st.sidebar:
-    st.title("⚡ RAG Control Panel")
+    st.title("SASA Control Panel")
     st.caption("Author: Mostafa Ihab · LangChain & Gemini")
     st.markdown("---")
 
     # 1. Knowledge Base Status
-    st.subheader("📚 Knowledge Base")
+    st.subheader("Knowledge Base")
     db_exists = PERSIST_DIR.exists() and (PERSIST_DIR / "indexed_chunks.pkl").exists()
 
     if db_exists:
-        st.success(f"✅ Vector Index Active ({len(existing_docs)} files in `data/`)")
+        st.success(f"Vector Index Active ({len(existing_docs)} files in `data/`)")
     else:
-        st.warning(f"⚠️ Index Not Built ({len(existing_docs)} files ready to index)")
+        st.warning(f"Index Not Built ({len(existing_docs)} files ready to index)")
 
     # 2. Document Upload
-    with st.expander("📤 Upload New Documents", expanded=False):
+    with st.expander("Upload New Documents", expanded=False):
         uploaded_files = st.file_uploader(
             "Add files to data directory",
             type=["pdf", "docx", "txt", "md", "csv"],
@@ -170,7 +169,7 @@ with st.sidebar:
             st.rerun()
 
     # 3. View Loaded Documents
-    with st.expander(f"📁 Document Inventory ({len(existing_docs)})", expanded=False):
+    with st.expander(f"Document Inventory ({len(existing_docs)})", expanded=False):
         if existing_docs:
             for d in existing_docs:
                 st.markdown(f"- `{d.name}`")
@@ -178,7 +177,7 @@ with st.sidebar:
             st.info("No documents found in `data/`.")
 
     # 4. Hyperparameter Settings
-    st.subheader("⚙️ Pipeline Settings")
+    st.subheader("Pipeline Settings")
     top_k = st.slider("Retrieved Chunks (top_k)", min_value=1, max_value=10, value=4, step=1)
     temperature = st.slider("LLM Temperature", min_value=0.0, max_value=1.0, value=0.0, step=0.1)
     chunk_mode = st.selectbox("Chunking Algorithm", ["recursive", "semantic"], index=0)
@@ -188,7 +187,7 @@ with st.sidebar:
     st.markdown("---")
 
     # 5. Rebuild Action
-    if st.button("🔄 Rebuild Knowledge Base", use_container_width=True, type="primary"):
+    if st.button("Rebuild Knowledge Base", use_container_width=True, type="primary"):
         with st.spinner("Indexing documents into Chroma & BM25..."):
             try:
                 retriever, _, _ = build_knowledge_base(
@@ -198,13 +197,13 @@ with st.sidebar:
                     top_k=top_k
                 )
                 st.session_state.retriever = retriever
-                st.success("✅ Index successfully rebuilt!")
+                st.success("Index successfully rebuilt.")
                 st.rerun()
             except Exception as e:
                 st.error(f"Failed to build index: {e}")
 
     # 6. Reset Chat
-    if st.button("🗑️ Clear Chat History", use_container_width=True):
+    if st.button("Clear Chat History", use_container_width=True):
         st.session_state.messages = []
         st.rerun()
 
@@ -214,20 +213,20 @@ if st.session_state.retriever is None:
     st.session_state.retriever = loaded_retriever
 
 # Main Content Area
-st.markdown('<div class="main-header">⚡ Post-Quantum Cryptography & RAG Assistant</div>', unsafe_allow_html=True)
+st.markdown('<div class="main-header">SASA: Post-Quantum Cryptography Assistant</div>', unsafe_allow_html=True)
 st.markdown('<div class="sub-header">Ask questions across your research papers, hardware-software co-design architectures, and RISC-V accelerators.</div>', unsafe_allow_html=True)
 
 # Check API Key
 if not os.getenv("GOOGLE_API_KEY"):
-    st.warning("⚠️ **GOOGLE_API_KEY is not configured.** Please add it to your `.env` file in the project root to enable question answering.")
+    st.warning("**GOOGLE_API_KEY is not configured.** Please add it to your `.env` file in the project root to enable question answering.")
 
 # Enable/disable cache
 enable_llm_cache(persist=enable_cache)
 
 # Welcome State with Suggested Questions
 if not st.session_state.messages:
-    st.info("💡 **Welcome!** Ask any question about the documents in your knowledge base.")
-    st.markdown("##### 📌 Suggested Questions:")
+    st.info("**Welcome to SASA.** Ask any question about your documents, hardware accelerators, or PQC algorithms.")
+    st.markdown("##### Suggested Questions:")
     col1, col2 = st.columns(2)
     sample_q1 = "What are the main hardware bottlenecks in CRYSTALS-Kyber acceleration?"
     sample_q2 = "How does the NTT (Number Theoretic Transform) accelerator improve ML-KEM performance?"
@@ -255,12 +254,12 @@ for msg in st.session_state.messages:
         st.markdown(msg["content"])
         if msg.get("sources"):
             badge_class = "badge-cache" if msg.get("is_cached") else "badge-live"
-            status_label = "🗄️ CACHED (SQLite)" if msg.get("is_cached") else "🌐 LIVE CALL (Gemini 2.5 Flash)"
+            status_label = "CACHED (SQLite)" if msg.get("is_cached") else "LIVE CALL (Gemini 2.5 Flash)"
             st.markdown(
-                f'<span class="metric-badge {badge_class}">{status_label} · ⏱️ {msg.get("latency", 0):.3f}s</span>',
+                f'<span class="metric-badge {badge_class}">{status_label} · {msg.get("latency", 0):.3f}s</span>',
                 unsafe_allow_html=True
             )
-            with st.expander(f"📚 {len(msg['sources'])} Cited Source(s)", expanded=False):
+            with st.expander(f"{len(msg['sources'])} Cited Source(s)", expanded=False):
                 for idx, src in enumerate(msg["sources"], 1):
                     st.markdown(f"""
                     <div class="source-card">
@@ -282,7 +281,7 @@ if prompt:
     # 2. Check if Knowledge Base is Available
     if st.session_state.retriever is None:
         with st.chat_message("assistant"):
-            st.error("❌ Knowledge base index not found. Please click **'Rebuild Knowledge Base'** in the sidebar first!")
+            st.error("Knowledge base index not found. Please click **'Rebuild Knowledge Base'** in the sidebar first.")
     else:
         # 3. Generate Answer
         with st.chat_message("assistant"):
@@ -314,14 +313,14 @@ if prompt:
                     st.markdown(answer)
 
                     badge_class = "badge-cache" if is_cached else "badge-live"
-                    status_label = "🗄️ CACHED (SQLite)" if is_cached else "🌐 LIVE CALL (Gemini 2.5 Flash)"
+                    status_label = "CACHED (SQLite)" if is_cached else "LIVE CALL (Gemini 2.5 Flash)"
                     st.markdown(
-                        f'<span class="metric-badge {badge_class}">{status_label} · ⏱️ {elapsed:.3f}s</span>',
+                        f'<span class="metric-badge {badge_class}">{status_label} · {elapsed:.3f}s</span>',
                         unsafe_allow_html=True
                     )
 
                     if sources:
-                        with st.expander(f"📚 {len(sources)} Cited Source(s)", expanded=False):
+                        with st.expander(f"{len(sources)} Cited Source(s)", expanded=False):
                             for idx, src in enumerate(sources, 1):
                                 st.markdown(f"""
                                 <div class="source-card">
@@ -340,4 +339,4 @@ if prompt:
                     })
 
                 except Exception as e:
-                    st.error(f"❌ Error generating response: {e}")
+                    st.error(f"Error generating response: {e}")

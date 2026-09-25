@@ -3,8 +3,8 @@
 Module: RAG Generation & Execution Chain (local/chain.py)
 Project: Production RAG System with LangChain & Google Gemini
 Author: Mostafa Ihab
-Date: 2026-09-12
-Version: 1.0.0
+Date: March 2026
+Version: 1.1.0
 Description:
     Assembles prompt formatting with strict grounding, context budgeting,
     SQLite persistent LLM caching, and LangChain Expression Language (LCEL)
@@ -13,8 +13,8 @@ Description:
 """
 
 __author__ = "Mostafa Ihab"
-__version__ = "1.0.0"
-__date__ = "2026-09-12"
+__version__ = "1.1.0"
+__date__ = "March 2026"
 
 import time
 from langchain_core.documents import Document
@@ -28,7 +28,7 @@ from langchain_core.runnables import RunnablePassthrough
 
 RAG_PROMPT = ChatPromptTemplate.from_template(
     """You are a helpful assistant answering questions using ONLY the context below.
-If the answer isn't in the context, say you don't know — do not make anything up.
+If the answer isn't in the context, say you don't know; do not make anything up.
 Cite the source_file for any fact you use.
 
 Context:
@@ -46,10 +46,10 @@ def enable_llm_cache(persist: bool = True, db_path: str = "./llm_cache.db"):
     """
     if persist:
         set_llm_cache(SQLiteCache(database_path=db_path))
-        print(f"✅ LLM persistent cache enabled (SQLite: {db_path})")
+        print(f"[INFO] LLM persistent cache enabled (SQLite: {db_path})")
     else:
         set_llm_cache(InMemoryCache())
-        print("✅ LLM in-memory cache enabled")
+        print("[INFO] LLM in-memory cache enabled")
 
 def format_docs(docs: list[Document], max_context_chars: int = 6000) -> str:
     """
@@ -62,7 +62,7 @@ def format_docs(docs: list[Document], max_context_chars: int = 6000) -> str:
         source = d.metadata.get("source_file", d.metadata.get("source", "unknown"))
         block = f"[Source: {source}]\n{d.page_content}"
         if total_chars + len(block) > max_context_chars:
-            print(f"⚠️ Context limit ({max_context_chars} chars) reached; dropping lower-ranked chunks.")
+            print(f"[WARNING] Context limit ({max_context_chars} chars) reached; dropping lower-ranked chunks.")
             break
         blocks.append(block)
         total_chars += len(block)
@@ -102,15 +102,15 @@ def ask(chain, retriever, question: str, show_sources: bool = True) -> str:
     elapsed = time.perf_counter() - start
 
     likely_cached = elapsed < CACHE_LATENCY_THRESHOLD_SECONDS
-    status = "🗄️ CACHED RESPONSE" if likely_cached else "🌐 LIVE GEMINI CALL"
+    status = "CACHED RESPONSE" if likely_cached else "LIVE GEMINI CALL"
 
-    print(f"\n❓ Question: {question}")
-    print(f"💬 Answer:\n{answer}\n")
-    print(f"⏱️ Latency: {elapsed:.3f}s  |  Source: {status}")
+    print(f"\nQuestion: {question}")
+    print(f"Answer:\n{answer}\n")
+    print(f"Latency: {elapsed:.3f}s  |  Source: {status}")
 
     if show_sources and retriever:
         docs = retriever.invoke(question)
-        print("📚 Sources retrieved:")
+        print("Sources retrieved:")
         for d in docs:
             source = d.metadata.get("source_file", d.metadata.get("source", "unknown"))
             preview = d.page_content[:120].replace('\n', ' ')

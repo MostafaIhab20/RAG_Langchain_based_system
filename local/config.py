@@ -3,8 +3,8 @@
 Module: Configuration & Model Initialization (local/config.py)
 Project: Production RAG System with LangChain & Google Gemini
 Author: Mostafa Ihab
-Date: 2026-09-12
-Version: 1.0.0
+Date: March 2026
+Version: 1.1.0
 Description:
     Manages environment variables (.env), LangSmith tracing configuration,
     and Google Gemini embedding models with optional local caching.
@@ -12,8 +12,8 @@ Description:
 """
 
 __author__ = "Mostafa Ihab"
-__version__ = "1.0.0"
-__date__ = "2026-09-12"
+__version__ = "1.1.0"
+__date__ = "March 2026"
 
 import os
 from pathlib import Path
@@ -28,7 +28,7 @@ if dotenv_path.exists():
 else:
     load_dotenv()
 
-# Silence user-agent warning
+# Default User-Agent identification for web requests
 if not os.environ.get("USER_AGENT"):
     os.environ["USER_AGENT"] = "PQC-RAG-System/1.0"
 
@@ -36,14 +36,14 @@ def setup_environment():
     """Validates and sets up environment variables for Gemini and LangSmith."""
     api_key = os.getenv("GOOGLE_API_KEY")
     if not api_key:
-        print("⚠️ Warning: GOOGLE_API_KEY is not set. Please add it to your .env file.")
+        print("Warning: GOOGLE_API_KEY is not set. Please add it to your .env file.")
 
     langchain_key = os.getenv("LANGCHAIN_API_KEY")
     if langchain_key:
         os.environ["LANGCHAIN_TRACING_V2"] = os.getenv("LANGCHAIN_TRACING_V2", "true")
         os.environ["LANGCHAIN_PROJECT"] = os.getenv("LANGCHAIN_PROJECT", "gemini-rag-local")
         os.environ["LANGCHAIN_ENDPOINT"] = os.getenv("LANGCHAIN_ENDPOINT", "https://api.smith.langchain.com")
-        print(f"✅ LangSmith tracing enabled: {os.environ['LANGCHAIN_PROJECT']}")
+        print(f"[INFO] LangSmith tracing enabled: {os.environ['LANGCHAIN_PROJECT']}")
 
 def get_embedding_model(model: str = None):
     """Returns Google Generative AI Embeddings instance."""
@@ -52,12 +52,8 @@ def get_embedding_model(model: str = None):
 
 def get_cached_embedding_model(cache_dir: str = "./embedding_cache", model: str = None):
     """Wraps the embedding model with a local file-based cache to avoid duplicate API calls."""
-    try:
-        from langchain_classic.embeddings import CacheBackedEmbeddings
-        from langchain_classic.storage import LocalFileStore
-    except ImportError:
-        from langchain.embeddings import CacheBackedEmbeddings
-        from langchain.storage import LocalFileStore
+    from langchain_classic.embeddings import CacheBackedEmbeddings
+    from langchain_classic.storage import LocalFileStore
 
     underlying_embeddings = get_embedding_model(model=model)
     store = LocalFileStore(cache_dir)

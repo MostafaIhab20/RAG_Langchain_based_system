@@ -3,8 +3,8 @@
 Module: Data Ingestion & Sanitization (local/ingestion.py)
 Project: Production RAG System with LangChain & Google Gemini
 Author: Mostafa Ihab
-Date: 2026-09-12
-Version: 1.0.0
+Date: March 2026
+Version: 1.1.0
 Description:
     Provides multi-format document loading (PDF, DOCX, TXT, MD, CSV, Web),
     Unicode cleaning (zero-width character removal, whitespace normalization),
@@ -13,10 +13,9 @@ Description:
 """
 
 __author__ = "Mostafa Ihab"
-__version__ = "1.0.0"
-__date__ = "2026-09-12"
+__version__ = "1.1.0"
+__date__ = "March 2026"
 
-import os
 import re
 import hashlib
 from pathlib import Path
@@ -40,7 +39,7 @@ def load_single_file(path: str) -> list[Document]:
     ext = Path(path).suffix.lower()
     loader_cls = LOADER_MAP.get(ext)
     if loader_cls is None:
-        print(f"⚠️ Skipping unsupported file type: {path}")
+        print(f"[WARNING] Skipping unsupported file type: {path}")
         return []
 
     try:
@@ -55,7 +54,7 @@ def load_single_file(path: str) -> list[Document]:
             })
         return docs
     except Exception as e:
-        print(f"❌ Failed to load {path}: {e}")
+        print(f"[ERROR] Failed to load {path}: {e}")
         return []
 
 def load_from_directory(dir_path: str, extensions: list[str] = None) -> list[Document]:
@@ -64,18 +63,18 @@ def load_from_directory(dir_path: str, extensions: list[str] = None) -> list[Doc
     all_docs = []
     base = Path(dir_path)
     if not base.exists():
-        print(f"⚠️ Directory does not exist: {dir_path}")
+        print(f"[WARNING] Directory does not exist: {dir_path}")
         return []
 
     files = [f for f in base.rglob("*") if f.is_file() and f.suffix.lower() in extensions]
-    print(f"📂 Found {len(files)} files to load in '{dir_path}'")
+    print(f"Found {len(files)} files to load in '{dir_path}'")
 
     for f in files:
         docs = load_single_file(str(f))
         all_docs.extend(docs)
-        print(f"  ✓ {f.name}: {len(docs)} document chunk(s)/page(s)")
+        print(f"  - {f.name}: {len(docs)} document chunk(s)/page(s)")
 
-    print(f"✅ Loaded {len(all_docs)} total document pages/records")
+    print(f"Loaded {len(all_docs)} total document pages/records")
     return all_docs
 
 def load_from_urls(urls: list[str]) -> list[Document]:
@@ -85,7 +84,7 @@ def load_from_urls(urls: list[str]) -> list[Document]:
     for d in docs:
         d.metadata["file_type"] = "web"
         d.metadata["ingested_at"] = datetime.utcnow().isoformat()
-    print(f"✅ Loaded {len(docs)} web page(s)")
+    print(f"Loaded {len(docs)} web page(s)")
     return docs
 
 def clean_document_text(doc: Document) -> Document:
@@ -105,7 +104,7 @@ def process_and_clean_docs(raw_docs: list[Document]) -> list[Document]:
         cleaned = clean_document_text(doc)
         if len(cleaned.page_content) < 10:
             filename = cleaned.metadata.get('source_file', 'Unknown File')
-            print(f"⚠️ Warning: '{filename}' has almost no text (<10 chars). Skipping.")
+            print(f"Warning: '{filename}' has almost no text (<10 chars). Skipping.")
             continue
         cleaned_docs.append(cleaned)
     return cleaned_docs
@@ -119,5 +118,5 @@ def deduplicate_docs(docs: list[Document]) -> list[Document]:
         if h not in seen:
             seen.add(h)
             unique.append(d)
-    print(f"🧹 Deduplication: {len(docs)} → {len(unique)} documents")
+    print(f"Deduplication: {len(docs)} -> {len(unique)} documents")
     return unique

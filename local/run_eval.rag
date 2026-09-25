@@ -1,0 +1,23 @@
+# -------------------------------------------------------------
+# SASA Batch Script Example: PQC Accelerator Analysis
+# Author: Mostafa Ihab
+# Run via: python local/main.py -f local/run_eval.rag
+# Or in shell: sasa> source local/run_eval.rag
+# -------------------------------------------------------------
+
+# 1. Inspect knowledge base telemetry
+status
+
+# 2. Inspect source documents
+read_docs
+
+# 3. Configure retrieval parameters
+set top_k 4
+set temperature 0.0
+
+# 4. Run sample targeted queries
+query "What is the role of the CV-X-IF interface in the ATHOS accelerator?"
+query "How does NTT polynomial multiplication accelerate CRYSTALS-Kyber?"
+
+# 5. Review final status
+status
